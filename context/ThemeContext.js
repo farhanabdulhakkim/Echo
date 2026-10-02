@@ -2,42 +2,60 @@
 
 import { createContext, useEffect, useState } from 'react';
 
-const ThemeContext = createContext();
+const ThemeContext = createContext({
+  theme: 'dark',
+  toggleTheme: () => {},
+  setTheme: () => {},
+});
 
 const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState('light');
+  const [theme, setThemeState] = useState('dark');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Check if running on the client
+    setMounted(true);
     if (typeof window !== 'undefined') {
-      const storedTheme = localStorage.getItem('theme');
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-      // Initialize theme based on localStorage or system preference
+      const storedTheme = localStorage.getItem('echo_theme');
       if (storedTheme) {
-        setTheme(storedTheme);
-      } else if (systemTheme) {
-        setTheme('dark');
+        setThemeState(storedTheme);
+      } else {
+        setThemeState('dark');
       }
     }
   }, []);
 
   useEffect(() => {
+    if (!mounted) return;
+    const root = document.documentElement;
     if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
     }
-  }, [theme]);
+  }, [theme, mounted]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
+    setThemeState(newTheme);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('echo_theme', newTheme);
+    }
+  };
+
+  const setTheme = (newTheme) => {
+    if (newTheme === 'system') {
+      const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setThemeState(prefersDark ? 'dark' : 'light');
+    } else {
+      setThemeState(newTheme);
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('echo_theme', newTheme);
+    }
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -4,18 +4,16 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
- 
-    // Or if using `src` directory:
-    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+    "./data/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  darkMode: 'class', 
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        'reddit': '#FF4500',
-        'reddit-red': '#FF4500',
+        'echo': '#6366f1',
+        'echo-light': '#818cf8',
       },
     },
   },
   plugins: [],
-}
+};

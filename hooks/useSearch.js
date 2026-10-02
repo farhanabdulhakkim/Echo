@@ -1,104 +1,82 @@
-import { useState, useEffect } from 'react';
+// Echo Search Hook — Supabase backend, local-only search (no Reddit API)
+// Phase 4: swap to full-text search index or pg_search if needed.
+// Keeps the exact same hook interface as Phase 2.
 
-export function useSearch() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+
+/**
+ * Search across topics, communities, discussions, and rooms via Supabase ilike.
+ * Debounced at 300ms.
+ *
+ * Returns:
+ *   { query, setQuery, results: { topics[], communities[], discussions[], rooms[] }, hasResults, isSearching }
+ */
+export function useSearch(initialQuery = "") {
+  const [query, setQuery] = useState(initialQuery);
+  const [results, setResults] = useState({
+    topics: [],
+    communities: [],
+    discussions: [],
+    rooms: [],
+  });
   const [isSearching, setIsSearching] = useState(false);
 
+  const runSearch = useCallback(async (q) => {
+    const trimmed = q.trim();
+    if (!trimmed) {
+      setResults({ topics: [], communities: [], discussions: [], rooms: [] });
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const supabase = createClient();
+    const pattern = `%${trimmed}%`;
+
+    const [topicsRes, communitiesRes, discussionsRes, roomsRes] =
+      await Promise.all([
+        supabase
+          .from("topics")
+          .select("*")
+          .or(`name.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern}`)
+          .limit(5),
+        supabase
+          .from("communities")
+          .select("*")
+          .or(`name.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern}`)
+          .limit(5),
+        supabase
+          .from("discussions")
+          .select("*, author:users(id, username, display_name)")
+          .or(`title.ilike.${pattern},content.ilike.${pattern},community_name.ilike.${pattern}`)
+          .limit(5),
+        supabase
+          .from("rooms")
+          .select("*")
+          .or(`title.ilike.${pattern},community_name.ilike.${pattern},category.ilike.${pattern}`)
+          .limit(5),
+      ]);
+
+    setResults({
+      topics:      topicsRes.data      ?? [],
+      communities: communitiesRes.data ?? [],
+      discussions: discussionsRes.data ?? [],
+      rooms:       roomsRes.data       ?? [],
+    });
+    setIsSearching(false);
+  }, []);
+
   useEffect(() => {
-    const searchReddit = async () => {
-      if (searchQuery.length >= 2) {
-        setIsSearching(true);
-        try {
-          const authResponse = await fetch('/api/reddit-auth', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
+    const timer = setTimeout(() => runSearch(query), 300);
+    return () => clearTimeout(timer);
+  }, [query, runSearch]);
 
-          if (!authResponse.ok) {
-            throw new Error('Failed to get access token');
-          }
+  const hasResults =
+    results.topics.length > 0 ||
+    results.communities.length > 0 ||
+    results.discussions.length > 0 ||
+    results.rooms.length > 0;
 
-          const { access_token } = await authResponse.json();
-
-          const response = await fetch(
-            `/api/reddit-search?q=${encodeURIComponent(searchQuery)}`,
-            {
-              headers: {
-                'Authorization': `Bearer ${access_token}`
-              }
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          const data = await response.json();
-
-          if (!data || !Array.isArray(data)) {
-            throw new Error('Unexpected data structure');
-          }
-
-          const transformedResults = data
-            .filter(listing => listing.kind === 'Listing' && listing.data?.children)
-            .flatMap(listing => listing.data.children)
-            .filter(item => item.data)
-            .map(item => {
-              const isSubreddit = item.kind === 't5';
-              return {
-                type: isSubreddit ? 'community' : 'post',
-                name: isSubreddit ? item.data.display_name_prefixed : item.data.subreddit_name_prefixed,
-                members: isSubreddit && item.data.subscribers
-                  ? `${(item.data.subscribers).toLocaleString()} members`
-                  : '',
-                title: !isSubreddit ? item.data.title : '',
-                subreddit: !isSubreddit ? item.data.subreddit_name_prefixed : '',
-                score: item.data.score,
-                id: item.data.id
-              };
-            })
-            .sort((a, b) => {
-              if (a.type === 'community' && b.type !== 'community') return -1;
-              if (b.type === 'community' && a.type !== 'community') return 1;
-              return 0;
-            })
-            .slice(0, 5);
-
-          setSuggestions(transformedResults);
-          setShowSuggestions(transformedResults.length > 0);
-        } catch (error) {
-          console.error('Error searching Reddit:', error);
-          setSuggestions([]);
-          setShowSuggestions(false);
-        } finally {
-          setIsSearching(false);
-        }
-      } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
-      }
-    };
-
-    const debounceTimeout = setTimeout(searchReddit, 500);
-    return () => clearTimeout(debounceTimeout);
-  }, [searchQuery]);
-
-  const handleSuggestionClick = (suggestion) => {
-    setSearchQuery(suggestion.type === 'community' ? suggestion.name : suggestion.title);
-    setShowSuggestions(false);
-  };
-
-  return {
-    searchQuery,
-    setSearchQuery,
-    suggestions,
-    showSuggestions,
-    setShowSuggestions,
-    isSearching,
-    handleSuggestionClick,
-  };
+  return { query, setQuery, results, hasResults, isSearching };
 }

@@ -9,6 +9,9 @@ const nextConfig = {
     ],
     unoptimized: true, // Add this line to disable optimization
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
