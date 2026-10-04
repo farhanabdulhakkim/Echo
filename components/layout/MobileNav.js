@@ -3,15 +3,16 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, Search, Radio, TrendingUp, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { cn } from "@/lib/utils";
+import { IconDiscover, IconSearch, IconRooms, IconPopular, NavGradient } from "@/components/icons/MobileIcons";
 
 const mobileTabs = [
-  { label: "Discover", href: "/discover", icon: Compass },
-  { label: "Search", href: "/search", icon: Search },
-  { label: "Live Rooms", href: "/rooms", icon: Radio, isLive: true },
-  { label: "Popular", href: "/popular-rooms", icon: TrendingUp },
+  { label: "Discover", href: "/discover", icon: IconDiscover },
+  { label: "Search", href: "/search", icon: IconSearch },
+  { label: "Live Rooms", href: "/rooms", icon: IconRooms, isLive: true },
+  { label: "Popular", href: "/popular-rooms", icon: IconPopular },
 ];
 
 export function MobileNav({ isOpen, onClose }) {
@@ -43,6 +44,7 @@ export function MobileNav({ isOpen, onClose }) {
         className="fixed bottom-0 left-0 right-0 z-30 lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 flex items-center justify-around"
         aria-label="Mobile navigation"
       >
+        <NavGradient />
         {mobileTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive =
@@ -54,11 +56,11 @@ export function MobileNav({ isOpen, onClose }) {
               href={tab.href}
               className={cn(
                 "flex flex-col items-center justify-center p-1.5 text-[10px] font-medium min-w-[52px] relative",
-                isActive ? "text-echo" : "text-gray-400"
+                isActive ? "text-echo" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               )}
             >
               <div className="relative">
-                <Icon className="w-5 h-5 mb-0.5" />
+                <Icon isActive={isActive} className="w-6 h-6 mb-0.5" />
                 {tab.isLive && (
                   <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-red-500" />
                 )}

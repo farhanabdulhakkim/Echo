@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Radio, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { Logo } from "@/components/brand/Logo";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -59,11 +60,8 @@ export default function AuthPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-echo flex items-center justify-center text-white font-bold text-xl mb-3">
-            E
-          </div>
-          <h1 className="text-xl font-bold text-gray-800 dark:text-white">Echo</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <Logo iconClassName="h-20 w-auto" className="mb-3" />
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 text-center">
             Find your people. Join the conversation.
           </p>
         </div>

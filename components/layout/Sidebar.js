@@ -3,17 +3,19 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, Search, Radio, TrendingUp, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { BRAND } from "@/data/brand";
 import { useAuth } from "@/context/AuthContext";
 import { InitialsAvatar } from "@/components/ui/InitialsAvatar";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/brand/Logo";
+import { IconDiscover, IconSearch, IconRooms, IconPopular, NavGradient } from "@/components/icons/MobileIcons";
 
 const navItems = [
-  { label: "Discover", href: "/discover", icon: Compass },
-  { label: "Search", href: "/search", icon: Search },
-  { label: "Live Rooms", href: "/rooms", icon: Radio, isLive: true },
-  { label: "Popular Rooms", href: "/popular-rooms", icon: TrendingUp },
+  { label: "Discover", href: "/discover", icon: IconDiscover },
+  { label: "Search", href: "/search", icon: IconSearch },
+  { label: "Live Rooms", href: "/rooms", icon: IconRooms, isLive: true },
+  { label: "Popular Rooms", href: "/popular-rooms", icon: IconPopular },
 ];
 
 export function Sidebar({ className = "", onItemClick }) {
@@ -29,15 +31,13 @@ export function Sidebar({ className = "", onItemClick }) {
       )}
     >
       {/* Logo */}
-      <Link href="/discover" onClick={onItemClick} className="flex items-center gap-2 px-2 py-3 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-echo flex items-center justify-center text-white font-bold text-sm">
-          E
-        </div>
-        <span className="font-bold text-lg text-gray-800 dark:text-white">{BRAND.name}</span>
+      <Link href="/discover" onClick={onItemClick} className="px-2 py-3 mb-4 block">
+        <Logo />
       </Link>
 
       {/* Core Nav */}
       <nav className="space-y-1 flex-1" aria-label="Main navigation">
+        <NavGradient />
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -55,6 +55,7 @@ export function Sidebar({ className = "", onItemClick }) {
               )}
             >
               <Icon
+                isActive={isActive}
                 className={cn(
                   "w-5 h-5 flex-shrink-0",
                   isActive ? "text-echo" : "text-gray-500 dark:text-gray-400",

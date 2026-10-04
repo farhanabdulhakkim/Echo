@@ -14,10 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Echo — Find your people. Join the conversation.",
+  title: "Echo",
   description: "A community platform for discussions, communities, and live voice rooms.",
   keywords: ["communities", "discussions", "voice rooms", "live audio"],
   authors: [{ name: "Echo Team" }],
+  icons: {
+    icon: '/abstract-logo.png',
+  },
 };
 
 export default function RootLayout({ children }) {

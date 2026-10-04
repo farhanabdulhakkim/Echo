@@ -9,6 +9,7 @@ import { InitialsAvatar } from "@/components/ui/InitialsAvatar";
 import { BRAND } from "@/data/brand";
 import { useAuth } from "@/context/AuthContext";
 import { useSearch } from "@/hooks/useSearch";
+import { Logo } from "@/components/brand/Logo";
 
 export function TopBar({ onOpenMobileMenu }) {
   const router = useRouter();
@@ -60,11 +61,8 @@ export function TopBar({ onOpenMobileMenu }) {
           >
             <Menu className="w-5 h-5" />
           </button>
-          <Link href="/discover" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-echo flex items-center justify-center text-white font-bold text-sm">
-              E
-            </div>
-            <span className="font-bold text-gray-800 dark:text-white">{BRAND.name}</span>
+          <Link href="/discover" className="block">
+            <Logo className="scale-95" />
           </Link>
         </div>
 
